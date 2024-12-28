@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_APP_CLIENT_ID=${COGNITO_APP_CLIENT_ID}
+      - COGNITO_APP_CLIENT_SECRET=${COGNITO_APP_CLIENT_SECRET}
+    volumes:
+      - ./backend:/app
+    command: gunicorn --bind 0.0.0.0:5000 --reload "app:create_app()"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - REACT_APP_AWS_REGION=${AWS_REGION}
+      - REACT_APP_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - REACT_APP_COGNITO_APP_CLIENT_ID=${COGNITO_APP_CLIENT_ID}
+    depends_on:
+      - backend 

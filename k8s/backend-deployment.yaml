@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: todo-backend
+  template:
+    metadata:
+      labels:
+        app: todo-backend
+    spec:
+      containers:
+      - name: todo-backend
+        image: ${ECR_REGISTRY}/todo-backend:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: AWS_REGION
+          valueFrom:
+            configMapKeyRef:
+              name: aws-config
+              key: AWS_REGION
+        - name: COGNITO_USER_POOL_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets
+              key: COGNITO_USER_POOL_ID
+        - name: COGNITO_APP_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets
+              key: COGNITO_APP_CLIENT_ID
+        - name: COGNITO_APP_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets
+              key: COGNITO_APP_CLIENT_SECRET
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-backend
+spec:
+  selector:
+    app: todo-backend
+  ports:
+  - port: 5000
+    targetPort: 5000
+  type: ClusterIP 
