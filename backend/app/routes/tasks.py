@@ -4,10 +4,8 @@ from app.utils.auth_middleware import require_auth
 from datetime import datetime
 from botocore.exceptions import ClientError
 import uuid
-from boto3.dynamodb.conditions import Attr
 
-
-bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
+bp = Blueprint('tasks', __name__)
 
 @bp.route('', methods=['POST'])
 @require_auth
@@ -90,7 +88,7 @@ def update_task(task_id):
         if 'description' in data:
             task.description = data['description']
         if 'due_date' in data:
-            task.due_date = datetime.fromisoformat(data['due_date']) if data['due_date'] else None
+            task.due_date = datetime.strptime(data['due_date'], '%Y-%m-%dT%H:%M:%S.%fZ') if data.get('due_date') else None
         if 'priority' in data:
             task.priority = data['priority']
         if 'status' in data:
@@ -105,6 +103,7 @@ def update_task(task_id):
     except Task.DoesNotExist:
         return jsonify({'error': 'Task not found'}), 404
     except Exception as e:
+        print("This is the error: ", e)
         return jsonify({'error': str(e)}), 400
 
 @bp.route('/<task_id>', methods=['DELETE'])

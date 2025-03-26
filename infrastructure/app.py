@@ -18,11 +18,11 @@ storage = StorageStack(app, "SecureToDoStorageStack", env=env)
 auth = AuthStack(app, "SecureToDoAuthStack", env=env)
 
 # Only create compute stack if DEPLOY_COMPUTE environment variable is set
-if os.getenv('DEPLOY_COMPUTE') == 'true':
-    compute = ComputeStack(app, "SecureToDoComputeStack",
-        storage_table_arn=storage.tasks_table.table_arn,
-        cognito_pool_arn=auth.user_pool.user_pool_arn,
-        env=env
-    )
+
+compute = ComputeStack(app, "SecureToDoComputeStack",
+    storage_table_arn=storage.tasks_table.table_arn,
+    cognito_pool_arn=auth.user_pool.user_pool_arn,
+    env=env
+)
 
 app.synth()
